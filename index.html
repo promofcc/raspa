@@ -1,0 +1,1945 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>RaspaGreen - R$ 1.000 com apenas 1 real</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #0a0a0a;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 70px;
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #333;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success {
+            background: #10b981;
+            border-left: 4px solid #059669;
+        }
+        .toast.error {
+            background: #ef4444;
+            border-left: 4px solid #dc2626;
+        }
+        .toast.info {
+            background: #3b82f6;
+            border-left: 4px solid #2563eb;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 1px solid #333;
+            height: 60px;
+        }
+        .logo {
+            height: 40px;
+        }
+        .logo img {
+            height: 100%;
+            width: auto;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn-enter, .btn-register {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-register {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            font-weight: bold;
+        }
+        .btn-enter:hover, .btn-register:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* User Info Styles */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+        .balance-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 6px 12px;
+        }
+        .user-coins {
+            color: #ffffff;
+            font-weight: normal;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-deposit {
+            background: #000000;
+            color: #000;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-photo-container {
+            position: relative;
+        }
+        .user-photo {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #333;
+            cursor: pointer;
+        }
+        .user-name {
+            display: none;
+        }
+        /* User Dropdown */
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            min-width: 200px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #333;
+        }
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .dropdown-item:hover {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+        }
+        .dropdown-item.logout {
+            color: #ff4444;
+        }
+        .dropdown-item.logout:hover {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff6666;
+        }
+        .dropdown-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            display: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        .modal-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #000000;
+            border-radius: 20px 20px 0 0;
+            max-height: 85vh;
+            min-height: 60vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-top: 1px solid #333;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: #000000;
+            padding: 15px 20px 0 20px;
+            border-radius: 20px 20px 0 0;
+            z-index: 10;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .modal-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal-logo img {
+            max-width: 100px;
+            height: auto;
+            filter: brightness(1.1);
+        }
+        .modal-title {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .modal-subtitle {
+            color: #9CA3AF;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            color: white;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #374151;
+            border: 1px solid #4B5563;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.875rem;
+        }
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #10B981;
+            box-shadow: 0 0 0 1px #10B981;
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #10B981;
+            font-size: 0.875rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .password-toggle:hover {
+            color: #059669;
+        }
+        .forgot-password {
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+        .forgot-password a {
+            color: #10B981;
+            text-decoration: none;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        .forgot-password a:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+        .invite-section {
+            margin-bottom: 1rem;
+        }
+        .invite-toggle {
+            background: none;
+            border: none;
+            color: #10B981;
+            font-size: 0.875rem;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: none;
+        }
+        .invite-toggle:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+        .invite-code-group {
+            margin-top: 0.5rem;
+            display: none;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .invite-code-group.show {
+            display: block;
+            opacity: 1;
+            max-height: 100px;
+        }
+        .submit-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #10B981;
+            color: black;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: background-color 0.2s;
+        }
+        .submit-button:hover {
+            background-color: #059669;
+        }
+        .submit-button:disabled {
+            background-color: #6B7280;
+            cursor: not-allowed;
+        }
+        .modal-divider {
+            position: relative;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        .modal-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #4B5563;
+        }
+        .modal-divider-text {
+            background-color: #000000;
+            color: #9CA3AF;
+            padding: 0 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .modal-switch {
+            text-align: center;
+            color: #9CA3AF;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+        .modal-switch a {
+            color: #10B981;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .modal-switch a:hover {
+            color: #059669;
+        }
+        
+        /* Deposit Modal Styles */
+        .deposit-banner {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .amount-scroll-container {
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .amount-buttons-horizontal {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 5px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .amount-buttons-horizontal::-webkit-scrollbar {
+            display: none;
+        }
+        .amount-btn-horizontal {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: normal;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 80px;
+        }
+        .amount-btn-horizontal:hover, .amount-btn-horizontal.selected {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+            border: 1px solid rgba(0, 255, 65, 0.3);
+        }
+        .amount-btn-horizontal.hot {
+            background: rgba(255, 107, 0, 0.2);
+            border: 1px solid rgba(255, 107, 0, 0.3);
+            color: #ff6b00;
+            position: relative;
+        }
+        .amount-btn-horizontal.hot:hover {
+            background: rgba(255, 107, 0, 0.3);
+            color: #ff8500;
+        }
+        .generate-qr-btn {
+            width: 100%;
+            padding: 15px;
+            background: #00ff41;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: normal;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        .qr-expiry-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .expiry-text {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .timer {
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff41, #ffff00, #ff4444);
+            border-radius: 3px;
+            transition: width 1s linear;
+            width: 100%;
+        }
+        .qr-section {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .pix-code-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .pix-code {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: monospace;
+            font-size: 12px;
+            width: 100%;
+            resize: none;
+            outline: none;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        /* Main Banner */
+        .main-banner {
+            margin: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            height: 120px;
+        }
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .banner-image.active {
+            opacity: 1;
+        }
+        
+        /* Live Prizes Section */
+        .live-prizes-section {
+            margin: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #444;
+        }
+        .live-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .live-indicator {
+            width: 6px;
+            height: 6px;
+            background: #00ff41;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .live-text {
+            color: #00ff41;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .prizes-scroll {
+            height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+        .prizes-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: scrollLeft 20s linear infinite;
+            width: max-content;
+        }
+        @keyframes scrollLeft {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        .live-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 8px 12px;
+            min-width: 180px;
+            flex-shrink: 0;
+        }
+        .live-prize-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #444;
+        }
+        .live-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .live-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+        .live-amount {
+            font-size: 11px;
+            color: #00ff41;
+            font-weight: 600;
+        }
+        
+        /* Highlights Section */
+        .highlights {
+            margin: 20px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .section-title {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .section-title::before {
+            content: "🔥";
+            margin-right: 8px;
+        }
+        .see-more {
+            color: #888;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        /* Game Cards */
+        .game-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+        .game-banner {
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+            background: #333;
+        }
+        .game-banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .game-banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 107, 0, 0.8), rgba(255, 170, 0, 0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .game-banner.blue .game-banner-overlay {
+            background: linear-gradient(45deg, rgba(0, 102, 255, 0.8), rgba(0, 170, 255, 0.8));
+        }
+        .game-banner.purple .game-banner-overlay {
+            background: linear-gradient(45deg, rgba(102, 0, 255, 0.8), rgba(170, 0, 255, 0.8));
+        }
+        .game-banner-text {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+        .game-info {
+            padding: 20px;
+        }
+        .game-title {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .game-subtitle {
+            color: #00ff41;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        .game-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .play-btn {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            flex: 1;
+            justify-content: center;
+        }
+        .play-btn:hover {
+            background: #00cc33;
+            transform: scale(1.02);
+        }
+        .view-prizes {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 10px 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            flex: 1;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .view-prizes:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #00ff41;
+        }
+        .coin-icon, .gift-icon {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+        
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+        }
+        .footer-logo {
+            height: 30px;
+            margin-bottom: 15px;
+        }
+        .footer-logo img {
+            height: 100%;
+            width: auto;
+        }
+        .footer-text {
+            color: #888;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .footer-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .footer-section h4 {
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .footer-section a {
+            color: #888;
+            text-decoration: none;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .footer-section a:hover {
+            color: #00ff41;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 360px;
+            background: rgba(0, 0, 0, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 6px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 6px 8px;
+            border-radius: 12px;
+            min-width: 55px;
+        }
+        .nav-item.active {
+            color: #00ff41;
+        }
+        .nav-item:hover {
+            color: #00ff41;
+        }
+        .nav-icon {
+            width: 22px;
+            height: 22px;
+            margin-bottom: 3px;
+            fill: currentColor;
+            transition: transform 0.2s ease;
+        }
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            .header {
+                padding: 10px 15px;
+            }
+            .main-banner {
+                margin: 15px;
+            }
+            .live-prizes-section, .highlights {
+                margin: 15px;
+            }
+            .nav-icon {
+                width: 20px;
+                height: 20px;
+            }
+            .nav-item {
+                font-size: 9px;
+                min-width: 50px;
+            }
+            .toast-container {
+                top: 10px;
+                right: 10px;
+            }
+            .toast {
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <img src="images/logo.png" alt="RaspaGreen">
+            </div>
+            <div class="header-buttons">
+                                    <button class="btn-enter" onclick="openLoginModal()">Entrar</button>
+                    <button class="btn-register" onclick="openRegisterModal()">Registrar</button>
+                            </div>
+        </header>
+
+        <!-- Login Modal -->
+        <div class="modal-overlay" id="loginModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="modal-close" onclick="closeModal('loginModal')">�</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-logo">
+                        <img src="images/logo.png" alt="Logo">
+                    </div>
+                    <div class="modal-title">Bem vindo de volta!</div>
+                    <div class="modal-subtitle">Conecte-se para acompanhar seus prêmios, depósitos e muito mais.</div>
+                    
+                    <div id="loginMessage"></div>
+                    
+                    <form id="loginForm">
+                        <input type="hidden" name="action" value="login">
+                        <div class="form-group">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" id="loginEmail" name="email" class="form-input" placeholder="example@site.com" required="">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword" class="form-label">Digite sua senha</label>
+                            <div class="password-container">
+                                <input type="password" id="loginPassword" name="password" class="form-input" placeholder="Insira sua senha..." required="">
+                                <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">Mostrar</button>
+                            </div>
+                            <div class="forgot-password">
+                                <a onclick="openForgotPasswordModal()">Esqueceu sua senha?</a>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">ENTRAR</button>
+                    </form>
+                    
+                    <div class="modal-divider">
+                        <span class="modal-divider-text">OU</span>
+                    </div>
+                    
+                    <div class="modal-switch">
+                        <p>Ainda não tem uma conta? <a onclick="switchToRegister()">Registrar</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div class="modal-overlay" id="registerModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="modal-close" onclick="closeModal('registerModal')">�</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-logo">
+                        <img src="images/logo.png" alt="Logo">
+                    </div>
+                    <div class="modal-title">Crie sua conta!</div>
+                    <div class="modal-subtitle">Conecte-se para acompanhar seus prêmios hoje!</div>
+                    
+                    <div id="registerMessage"></div>
+                    
+                    <form id="registerForm">
+                        <input type="hidden" name="action" value="register">
+                        <div class="form-group">
+                            <label for="registerUsername" class="form-label">Nome Completo</label>
+                            <input type="text" id="registerUsername" name="username" class="form-input" placeholder="Digite o seu nome completo" required="">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerEmail" class="form-label">Email</label>
+                            <input type="email" id="registerEmail" name="email" class="form-input" placeholder="example@site.com" required="">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerTelefone" class="form-label">Telefone</label>
+                            <input type="tel" id="registerTelefone" name="telefone" class="form-input" placeholder="(00) 0000-0000" required="">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerPassword" class="form-label">Escolha uma senha</label>
+                            <div class="password-container">
+                                <input type="password" id="registerPassword" name="password" class="form-input" placeholder="Digite uma senha forte..." required="">
+                                <button type="button" class="password-toggle" onclick="togglePassword('registerPassword', this)">Mostrar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="invite-section">
+                            <button type="button" class="invite-toggle" onclick="toggleInviteCode()">Você tem código de convite?</button>
+                            <div class="invite-code-group" id="inviteCodeGroup">
+                                <label for="inviteCode" class="form-label">Código de convite</label>
+                                <input type="text" id="inviteCode" name="invite_code" class="form-input" placeholder="Digite seu código de convite" value="">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">CRIAR</button>
+                    </form>
+                    
+                    <div class="modal-divider">
+                        <span class="modal-divider-text">OU</span>
+                    </div>
+                    
+                    <div class="modal-switch">
+                        <p>Já tem uma conta? <a onclick="switchToLogin()">Entrar</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forgot Password Modal -->
+        <div class="modal-overlay" id="forgotPasswordModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="modal-close" onclick="closeModal('forgotPasswordModal')">�</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-logo">
+                        <img src="images/logo.png" alt="Logo">
+                    </div>
+                    <div class="modal-title">Esqueceu sua senha?</div>
+                    <div class="modal-subtitle">Digite seu email para receber uma nova senha</div>
+                    
+                    <div id="forgotPasswordMessage"></div>
+                    
+                    <form id="forgotPasswordForm">
+                        <div class="form-group">
+                            <label for="forgotEmail" class="form-label">Email</label>
+                            <input type="email" id="forgotEmail" name="email" class="form-input" placeholder="Digite seu email" required="">
+                        </div>
+                        
+                        <button type="submit" class="submit-button">ENVIAR NOVA SENHA</button>
+                    </form>
+                    
+                    <div class="modal-divider">
+                        <span class="modal-divider-text">OU</span>
+                    </div>
+                    
+                    <div class="modal-switch">
+                        <p>Lembrou da senha? <a onclick="switchToLogin()">Entrar</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit Modal -->
+        <div class="modal-overlay" id="depositModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="modal-close" onclick="closeModal('depositModal')">�</button>
+                </div>
+                <div class="modal-body">
+                    <img src="images/deposito.png" alt="Banner Depósito" class="deposit-banner">
+                    
+                    <div class="modal-title">Depositar</div>
+                    <div class="modal-subtitle">Escolha o valor e gere seu QR Code PIX</div>
+                    
+                    <div id="depositMessage"></div>
+                    
+                    <div id="depositForm">
+                        <div class="form-group">
+                            <label for="depositAmount" class="form-label">Valor:</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9CA3AF;">R$</span>
+                                <input type="text" id="depositAmount" class="form-input" style="padding-left: 35px;" placeholder="0,00" required="">
+                            </div>
+                        </div>
+                        
+                        <div class="amount-scroll-container">
+                            <div class="amount-buttons-horizontal">
+                                <button type="button" class="amount-btn-horizontal" onclick="selectAmount(10)">R$ 10,00</button>
+                                <button type="button" class="amount-btn-horizontal hot" onclick="selectAmount(30)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                                        <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.28 2.67-.2 3.73-.74 1.67-2.23 2.72-4.01 2.72z"></path>
+                                    </svg>
+                                    R$ 30,00
+                                </button>
+                                <button type="button" class="amount-btn-horizontal" onclick="selectAmount(50)">R$ 50,00</button>
+                                <button type="button" class="amount-btn-horizontal" onclick="selectAmount(100)">R$ 100,00</button>
+                                <button type="button" class="amount-btn-horizontal" onclick="selectAmount(200)">R$ 200,00</button>
+                                <button type="button" class="amount-btn-horizontal" onclick="selectAmount(500)">R$ 500,00</button>
+                            </div>
+                        </div>
+                        <button type="button" class="generate-qr-btn" onclick="generateQRCode()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm-6 4h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h2v2h-2v-2zm4 0h2v2h-2v-2zm2-2h2v2h-2v-2zm0-4h2v2h-2v-2zm-4-2h2v2h-2v-2z"></path>
+                            </svg>
+                            Gerar QR Code
+                        </button>
+                    </div>
+                    
+                    <div id="qrCodeSection" style="display: none;">
+                        <div class="qr-section">
+                            <div class="qr-expiry-section">
+                                <div class="expiry-text">O QR Code expira em:</div>
+                                <div class="timer" id="timer">04:57</div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="progressBar"></div>
+                                </div>
+                            </div>
+                            <div class="qr-code" id="qrCodeContainer"></div>
+                            <div id="amountDisplay" class="modal-title" style="color: #00ff41; margin-bottom: 15px;"></div>
+                            
+                            <div class="pix-code-container">
+                                <textarea id="pixCodeText" class="pix-code" rows="3" readonly="" placeholder="Código PIX será gerado aqui..."></textarea>
+                                <button class="copy-btn" onclick="copyPixCode()">Copiar Código</button>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Banner -->
+        <div class="main-banner">
+            <img src="images/banner1.png" alt="R$ 1.000 com apenas 1 real" class="banner-image active" id="banner1">
+            <img src="images/banner2.png" alt="Banner 2" class="banner-image" id="banner2">
+        </div>
+
+        <!-- Live Prizes Section -->
+        <div class="live-prizes-section">
+            <div class="live-header">
+                <div class="live-indicator"></div>
+                <span class="live-text">AO VIVO</span>
+            </div>
+            <div class="prizes-scroll">
+                <div class="prizes-container" id="prizesContainer">
+                    <!-- Prizes will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Highlights Section -->
+        <div class="highlights">
+            <div class="section-header">
+                <div class="section-title">Destaques</div>
+                <a href="#" class="see-more" onclick="checkLogin(event, 'raspadinhas.php')">Ver mais ></a>
+            </div>
+            
+                                            <div class="game-card">
+                    <div class="game-banner ">
+                        <img src="images/game1.jpg" alt="Game Background" class="game-banner-image">
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Centavo da Sorte</div>
+                        <div class="game-subtitle">PRÊMIOS DE ATÉ R$ 1.000,00</div>
+                        <div class="game-actions">
+                            <button class="play-btn" onclick="checkLogin(event, 'scratch/1.php')">
+                                <img src="images/moeda.gif" class="coin-icon" alt="Moeda">
+                                Jogar R$ 2,50                            </button>
+                            <a href="#" class="view-prizes" onclick="checkLogin(event, 'scratch/1.php')">
+                                <svg class="gift-icon" viewBox="0 0 24 24">
+                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" fill="currentColor"></path>
+                                </svg>
+                                VER PRÊMIOS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                <div class="game-card">
+                    <div class="game-banner purple">
+                        <img src="images/game2.jpg" alt="Game Background" class="game-banner-image">
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Sorte Instantânea</div>
+                        <div class="game-subtitle">PRÊMIOS DE ATÉ R$ 2.500,00</div>
+                        <div class="game-actions">
+                            <button class="play-btn" onclick="checkLogin(event, 'scratch/2.php')">
+                                <img src="images/moeda.gif" class="coin-icon" alt="Moeda">
+                                Jogar R$ 10,00                            </button>
+                            <a href="#" class="view-prizes" onclick="checkLogin(event, 'scratch/2.php')">
+                                <svg class="gift-icon" viewBox="0 0 24 24">
+                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" fill="currentColor"></path>
+                                </svg>
+                                VER PRÊMIOS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                <div class="game-card">
+                    <div class="game-banner blue">
+                        <img src="images/game3.jpg" alt="Game Background" class="game-banner-image">
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Raspe e Ganhe</div>
+                        <div class="game-subtitle">PRÊMIOS DE ATÉ R$ 50.000,00</div>
+                        <div class="game-actions">
+                            <button class="play-btn" onclick="checkLogin(event, 'scratch/3.php')">
+                                <img src="images/moeda.gif" class="coin-icon" alt="Moeda">
+                                Jogar R$ 50,00                            </button>
+                            <a href="#" class="view-prizes" onclick="checkLogin(event, 'scratch/3.php')">
+                                <svg class="gift-icon" viewBox="0 0 24 24">
+                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" fill="currentColor"></path>
+                                </svg>
+                                VER PRÊMIOS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                <div class="game-card">
+                    <div class="game-banner ">
+                        <img src="images/game4.jpg" alt="Game Background" class="game-banner-image">
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Raspadinha Suprema</div>
+                        <div class="game-subtitle">PRÊMIOS DE ATÉ R$ 50.000,00</div>
+                        <div class="game-actions">
+                            <button class="play-btn" onclick="checkLogin(event, 'scratch/4.php')">
+                                <img src="images/moeda.gif" class="coin-icon" alt="Moeda">
+                                Jogar R$ 100,00                            </button>
+                            <a href="#" class="view-prizes" onclick="checkLogin(event, 'scratch/4.php')">
+                                <svg class="gift-icon" viewBox="0 0 24 24">
+                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" fill="currentColor"></path>
+                                </svg>
+                                VER PRÊMIOS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                <div class="game-card">
+                    <div class="game-banner purple">
+                        <img src="images/pixnahora.png" alt="Game Background" class="game-banner-image">
+                    </div>
+                    <div class="game-info">
+                        <div class="game-title">Pix na Hora</div>
+                        <div class="game-subtitle">PRÊMIOS DE ATÉ R$ 500,00</div>
+                        <div class="game-actions">
+                            <button class="play-btn" onclick="checkLogin(event, 'scratch/5.php')">
+                                <img src="images/moeda.gif" class="coin-icon" alt="Moeda">
+                                Jogar R$ 0,50                            </button>
+                            <a href="#" class="view-prizes" onclick="checkLogin(event, 'scratch/5.php')">
+                                <svg class="gift-icon" viewBox="0 0 24 24">
+                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" fill="currentColor"></path>
+                                </svg>
+                                VER PRÊMIOS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                    </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-logo">
+                <img src="images/logo.png" alt="RaspaGreen">
+            </div>
+            <div class="footer-text">
+                © 2025 raspagreen.com. Todos os direitos reservados.<br><br>
+                Raspadinhas e outros jogos de azar são regulamentados e cobertos pela nossa licença de jogos. Jogue com responsabilidade.
+            </div>
+            <div class="footer-links">
+                <div class="footer-section">
+                    <h4>Regulamentos</h4>
+                    <a href="#">Jogo responsável</a>
+                    <a href="#">Política de Privacidade</a>
+                    <a href="#">Termos de Uso</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Ajuda</h4>
+                    <a href="#">Perguntas Frequentes</a>
+                    <a href="#">Como Jogar</a>
+                    <a href="#">Suporte Técnico</a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active">
+                <img src="images/inicio.png" class="nav-icon" alt="Início">
+                Início
+            </a>
+            <a href="#" class="nav-item" onclick="checkLogin(event, 'premios.php')">
+                <img src="images/premios.png" class="nav-icon" alt="Prêmios">
+                Prêmios
+            </a>
+            <a href="#" class="nav-item" onclick="openDepositModal()">
+                <img src="images/depositar.png" class="nav-icon" alt="Depositar">
+                Depositar
+            </a>
+            <a href="#" class="nav-item" onclick="checkLogin(event, 'profile.php')">
+                <img src="images/perfil.png" class="nav-icon" alt="Perfil">
+                Perfil
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        const isLoggedIn = false;
+        let currentTransactionId = null;
+        let paymentCheckInterval = null;
+        const inviteCodeFromUrl = '';
+        
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        }
+        
+        // Função para verificar login antes de acessar páginas
+        function checkLogin(event, url) {
+            event.preventDefault();
+            if (!isLoggedIn) {
+                openLoginModal();
+                return false;
+            }
+            if (url !== '#') {
+                window.location.href = url;
+            }
+            return true;
+        }
+        
+        // Modal Functions
+        function openLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function openRegisterModal() {
+            const modal = document.getElementById('registerModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Se há código de convite na URL, mostrar e preencher
+            if (inviteCodeFromUrl) {
+                toggleInviteCode();
+                setTimeout(() => {
+                    document.getElementById('inviteCode').value = inviteCodeFromUrl;
+                }, 100);
+            }
+        }
+        
+        function openDepositModal() {
+            if (!isLoggedIn) {
+                openLoginModal();
+                return;
+            }
+            const modal = document.getElementById('depositModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Reset form
+            backToForm();
+        }
+        
+        function openForgotPasswordModal() {
+            // Fechar modal de login
+            closeModal('loginModal');
+            
+            // Abrir modal de esqueceu senha
+            setTimeout(() => {
+                const modal = document.getElementById('forgotPasswordModal');
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }, 300);
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Clear payment check interval if closing deposit modal
+            if (modalId === 'depositModal' && paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+                paymentCheckInterval = null;
+            }
+        }
+        function switchToRegister() {
+            closeModal('loginModal');
+            setTimeout(() => {
+                openRegisterModal();
+            }, 300);
+        }
+        function switchToLogin() {
+            closeModal('registerModal');
+            closeModal('forgotPasswordModal');
+            setTimeout(() => {
+                openLoginModal();
+            }, 300);
+        }
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+        // Password toggle function
+        function togglePassword(inputId, button) {
+            const passwordInput = document.getElementById(inputId);
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                button.textContent = 'Ocultar';
+            } else {
+                passwordInput.type = 'password';
+                button.textContent = 'Mostrar';
+            }
+        }
+        // Invite code toggle
+        function toggleInviteCode() {
+            const inviteCodeGroup = document.getElementById('inviteCodeGroup');
+            const toggleButton = document.querySelector('.invite-toggle');
+            
+            if (inviteCodeGroup.classList.contains('show')) {
+                inviteCodeGroup.classList.remove('show');
+                toggleButton.textContent = 'Você tem código de convite?';
+            } else {
+                inviteCodeGroup.classList.add('show');
+                toggleButton.textContent = 'Ocultar código de convite';
+            }
+        }
+        
+        // TELEFONE FORMATTING ADICIONADO DE VOLTA
+        if (document.getElementById('registerTelefone')) {
+            document.getElementById('registerTelefone').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 11) {
+                    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                } else if (value.length >= 7) {
+                    value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                } else if (value.length >= 3) {
+                    value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+                }
+                e.target.value = value;
+            });
+        }
+        
+        // Deposit Functions
+        function selectAmount(amount) {
+            document.getElementById('depositAmount').value = amount.toFixed(2).replace('.', ',');
+            
+            // Update button states
+            document.querySelectorAll('.amount-btn-horizontal').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+        
+        function formatCurrency(input) {
+            let value = input.value.replace(/\D/g, '');
+            value = (value / 100).toFixed(2);
+            input.value = value.replace('.', ',');
+        }
+        
+        // Format amount input
+        document.getElementById('depositAmount').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d,]/g, '');
+            if (value.includes(',')) {
+                let parts = value.split(',');
+                if (parts[1] && parts[1].length > 2) {
+                    parts[1] = parts[1].substring(0, 2);
+                }
+                value = parts.join(',');
+            }
+            e.target.value = value;
+        });
+        
+        function generateQRCode() {
+            const amountInput = document.getElementById('depositAmount');
+            let amount = amountInput.value.replace(',', '.');
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Por favor, insira um valor válido', 'error');
+                return;
+            }
+            
+            amount = parseFloat(amount);
+            if (amount < 1) {
+                showToast('Valor mínimo é R$ 1,00', 'error');
+                return;
+            }
+            
+            // Show loading
+            showToast('Gerando QR Code...', 'info');
+            
+            // Fazer fetch para payment.php em vez do index.php
+            const formData = new FormData();
+            formData.append('amount', amount);
+            
+            fetch('payment.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Extract QR code and PIX code from response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const qrImg = doc.querySelector('img[alt="QR Code PIX"]');
+                const pixCode = doc.querySelector('#pixCode');
+                const transactionIdMatch = html.match(/transactionId\s*=\s*"([^"]+)"/);
+                
+                if (qrImg && pixCode && transactionIdMatch) {
+                    currentTransactionId = transactionIdMatch[1];
+                    
+                    // Show QR section
+                    document.getElementById('depositForm').style.display = 'none';
+                    document.getElementById('qrCodeSection').style.display = 'block';
+                    
+                    // Set QR code
+                    document.getElementById('qrCodeContainer').innerHTML = `<img src="${qrImg.src}" style="width: 100%; height: 100%; object-fit: contain;">`;
+                    
+                    // Set PIX code
+                    document.getElementById('pixCodeText').value = pixCode.value;
+                    
+                    // Set amount display
+                    document.getElementById('amountDisplay').textContent = `R$ ${amount.toFixed(2).replace('.', ',')}`;
+                    
+                    // Start timer
+                    startTimer(300); // 5 minutes
+                    
+                    // Start payment check
+                    startPaymentCheck();
+                    
+                    showToast('QR Code gerado com sucesso!', 'success');
+                } else {
+                    showToast('Erro ao gerar QR Code. Tente novamente.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Erro de conexão', 'error');
+            });
+        }
+        
+        function copyPixCode() {
+            const pixCode = document.getElementById('pixCodeText');
+            pixCode.select();
+            document.execCommand('copy');
+            showToast('Código PIX copiado!', 'success');
+        }
+        
+        function backToForm() {
+            document.getElementById('qrCodeSection').style.display = 'none';
+            document.getElementById('depositForm').style.display = 'block';
+            
+            // Clear form
+            document.getElementById('depositAmount').value = '';
+            document.querySelectorAll('.amount-btn-horizontal').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Clear payment check
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+                paymentCheckInterval = null;
+            }
+        }
+        
+        // User Menu Functions
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            const coinsElement = document.querySelector('.user-coins');
+            
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+                coinsElement.classList.remove('active');
+            } else {
+                dropdown.classList.add('show');
+                coinsElement.classList.add('active');
+            }
+        }
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const userInfo = document.querySelector('.user-info');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userInfo.contains(e.target)) {
+                dropdown.classList.remove('show');
+                document.querySelector('.user-coins').classList.remove('active');
+            }
+        });
+        
+        // Update timer function with progress bar
+        function startTimer(seconds) {
+            const timerElement = document.getElementById('timer');
+            const progressBar = document.getElementById('progressBar');
+            let timeLeft = seconds;
+            const totalTime = seconds;
+            
+            const timer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                // Update progress bar
+                const progress = (timeLeft / totalTime) * 100;
+                progressBar.style.width = progress + '%';
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showToast('QR Code expirado', 'error');
+                    backToForm();
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+        
+        function startPaymentCheck() {
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+            }
+            
+            paymentCheckInterval = setInterval(() => {
+                if (!currentTransactionId) return;
+                
+                fetch('consult.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ transactionId: currentTransactionId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        clearInterval(paymentCheckInterval);
+                        showToast('Pagamento aprovado! Saldo atualizado.', 'success');
+                        closeModal('depositModal');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Payment check error:', error);
+                });
+            }, 3000);
+        }
+        // Form submissions
+        if (document.getElementById('loginForm')) {
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Erro de conexão', 'error');
+                });
+            });
+        }
+        if (document.getElementById('registerForm')) {
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Erro de conexão', 'error');
+                });
+            });
+        }
+        // Logout function
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                window.location.href = 'auth/logout.php';
+            }
+        }
+        // Banner rotation
+        let currentBanner = 0;
+        const banners = ['banner1', 'banner2'];
+        
+        function rotateBanner() {
+            const currentBannerElement = document.getElementById(banners[currentBanner]);
+            if (currentBannerElement) {
+                currentBannerElement.classList.remove('active');
+                
+                currentBanner = (currentBanner + 1) % banners.length;
+                
+                const nextBannerElement = document.getElementById(banners[currentBanner]);
+                if (nextBannerElement) {
+                    nextBannerElement.classList.add('active');
+                }
+            }
+        }
+        // Start banner rotation
+        setInterval(rotateBanner, 4000);
+        // Live Stream Animation
+        const names = [
+            'Verônica Ba***', 'Jácomo Lo***', 'João Ma***', 'Santiago Ar***', 'Melina Do***',
+            'Paula Ra***', 'Horácio Sa***', 'Gabrielly Ma***', 'Christopher V***',
+            'Ana Paula***', 'Ricardo M***', 'Fernanda S***', 'João P***',
+            'Maria C***', 'Carlos A***', 'Juliana F***', 'Pedro H***',
+            'Amanda L***', 'Bruno R***', 'Larissa M***', 'Rafael S***',
+            'Beatriz O***', 'Lucas T***', 'Camila R***', 'Diego F***'
+        ];
+        const amounts = [
+            'R$ 1.900,00', 'R$ 1,00', 'R$ 5,00', 'R$ 50,00', 'R$ 3.000,00',
+            'R$ 2.500,00', 'R$ 4.000,00', 'R$ 11.000,00', 'R$ 850,00',
+            'R$ 1.200,00', 'R$ 7.500,00', 'R$ 3.300,00', 'R$ 5.800,00',
+            'R$ 950,00', 'R$ 15.000,00', 'R$ 2.100,00', 'R$ 8.750,00',
+            'R$ 1.800,00', 'R$ 6.400,00', 'R$ 4.200,00', 'R$ 12.000,00',
+            'R$ 3.750,00', 'R$ 9.200,00', 'R$ 1.650,00', 'R$ 5.300,00'
+        ];
+        // Prize images from the premios folder
+        const prizeImages = [
+            'premios/novemil.png',
+            'premios/churrasqueira.png',
+            'premios/ipad11.png',
+            'premios/applewatchultra2.png',
+            'premios/air_fryer.png',
+            'premios/nikedunkrosa.png',
+            'premios/mil1k.png',
+            'premios/cg160start.png',
+            'premios/galaxyzflip5256gbcreme.png',
+            'premios/iphone15azul.png',
+            'premios/iphone15pro256gbtitnionatural.png',
+            'premios/jblboombox3black.png',
+            'premios/pop_110i.png',
+            'premios/redmi12c128gbcinza.png'
+        ];
+        function generateLiveItems() {
+            const prizesContainer = document.getElementById('prizesContainer');
+            if (!prizesContainer) return;
+            
+            // Clear existing items
+            prizesContainer.innerHTML = '';
+            
+            // Create items for smooth continuous animation (2 sets for seamless loop)
+            let itemsHTML = '';
+            
+            // Generate two identical sets for seamless looping
+            for (let set = 0; set < 2; set++) {
+                for (let i = 0; i < 12; i++) {
+                    const randomName = names[Math.floor(Math.random() * names.length)];
+                    const randomAmount = amounts[Math.floor(Math.random() * amounts.length)];
+                    const randomPrize = prizeImages[Math.floor(Math.random() * prizeImages.length)];
+                    
+                    itemsHTML += `
+                        <div class="live-item">
+                            <img src="${randomPrize}" alt="Prize" class="live-prize-image" onerror="this.style.background='#444';">
+                            <div class="live-info">
+                                <div class="live-name">${randomName}</div>
+                                <div class="live-amount">${randomAmount}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            prizesContainer.innerHTML = itemsHTML;
+        }
+        // Initialize live stream immediately when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            generateLiveItems();
+        });
+        // Also call it immediately in case DOMContentLoaded already fired
+        generateLiveItems();
+        // Refresh live items every 20 seconds to match animation duration
+        setInterval(generateLiveItems, 20000);
+        // Add some visual feedback to nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (!this.onclick) {
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+        // Prevent zoom and horizontal scroll
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        // Add loading animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease-in-out';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // Form handler para esqueceu senha
+        if (document.getElementById('forgotPasswordForm')) {
+            document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                const submitBtn = this.querySelector('.submit-button');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'ENVIANDO...';
+                
+                fetch('auth/forgot_password.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        closeModal('forgotPasswordModal');
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Erro de conexão', 'error');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
+            });
+        }
+    </script>
+
+
+</body></html>
